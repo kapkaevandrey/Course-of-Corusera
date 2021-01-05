@@ -9,13 +9,13 @@
 запускаете этот скрипт.
 """
 import sys
-from week5.client import Client, ClientError
+from client import Client, ClientError
 
 
 def run(host, port):
     client1 = Client(host, port, timeout=5)
     client2 = Client(host, port, timeout=5)
-    command = "wrong command test\n"
+    command = "wrong command test"
 
     try:
         data = client1.get(command)
@@ -28,10 +28,11 @@ def run(host, port):
         print("Неверная команда, отправленная серверу, должна возвращать ошибку протокола")
         sys.exit(1)
 
+    print("Test 1 на отправку сообщения get wrong command test удачно")
     command = 'some_key'
     try:
         data_1 = client1.get(command)
-        data_2 = client1.get(command)
+        data_2 = client2.get(command)
     except ClientError:
         print('Сервер вернул ответ на валидный запрос, который клиент определил, '
               'как не корректный.. ')
@@ -113,4 +114,4 @@ def run(host, port):
 
 
 if __name__ == "__main__":
-    run("127.0.0.1", 8888)
+    run("127.0.0.1", 10001)

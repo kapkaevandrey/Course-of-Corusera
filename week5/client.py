@@ -24,15 +24,18 @@ class Client:
         message = b""
         try:
             while message.endswith(b"\n\n"):
-                message += self.sock.recv(1024).decode("utf-8")
+                message += self.sock.recv(1024)
         except socket.error as err:
             raise ClientError("no response received from the server", err)
 
         # анализируем результат ответа получаем результат и список с данными
-        result, *data = message.split("\n")[:-2]
-        if result != "ok":
-            raise ClientError("operation failed")
-        return data
+        try:
+            result, *data = message.decode("utf-8").split("\n")
+            if result != "ok":
+                raise ClientError("operation failed")
+            return data
+        except ValueError as err:
+            raise ClientError("invalid data format", err)
 
     def put(self, metric: str, value: float, timestamp=None):
         timestamp = int(time.time()) if timestamp is None else timestamp
@@ -75,3 +78,13 @@ class Client:
             self.sock.close()
         except socket.error as er:
             raise ClientError("failed to close connection", er)
+if __name__ == "__main__":
+    client = Client("127.0.0.1", 8889)
+    client.put("palm.cpu", 0.5, timestamp=1150864247)
+    client.put("palm.cpu", 2.0, timestamp=1150864248)
+    client.put("palm.cpu", 0.5, timestamp=1150864248)
+
+    client.put("eardrum.cpu", 3, timestamp=1150864250)
+    client.put("eardrum.cpu", 4, timestamp=1150864251)
+    client.put("eardrum.memory", 4200000)
+    print(client.get("*"))
